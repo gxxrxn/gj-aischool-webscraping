@@ -21,6 +21,7 @@ for movie in section:
         }
 
     )
+    
 headers = {
     'authority': 'movie.naver.com',
     'upgrade-insecure-requests': '1',
@@ -44,11 +45,6 @@ for data in movie_data:
         ('isMileageSubscriptionReject', 'false'),
     )
 
-    # review_url = f"https://movie.naver.com/movie/bi/mi/point.nhn?code={code}#tab"
-
-    # review_response = requests.get(review_url)
-
-
     review_response = requests.get('https://movie.naver.com/movie/bi/mi/pointWriteFormList.nhn', headers=headers, params=params)
     review_soup = BeautifulSoup(review_response.text, 'html.parser')
 
@@ -57,16 +53,17 @@ for data in movie_data:
     for review in review_section:
         score = review.select_one("div > em").text
         
-        review_data = review.select_one("div.score_reple > p > span > span")
+        review_data = review.select_one("div.score_reple > p")
         review_txt = ""
 
-        if review_data:
-            if review_data['class'] == "btn_more":
-                review_txt = review_data.select_one("span[id^='_filtered_ment_']").text
-            else:
-                review_txt = review_data.select_one("a")['data-src']
+        if review_data.select_one("span[id^=text_spo]"):
+            review_txt = review_data.select_one("span[id^='_filtered_ment_']").text
+
+        elif review_data.select_one("span > span"):
+            review_txt = review_data.select_one("span > span > a")['data-src']
+
         else:
-            review_txt = review.select_one("div.score_reple > p > span[id^='_filtered_ment']").text
+            review_txt = review_data.select_one("span[id^='_filtered_ment']").text
 
         final_review_data.append(
             {
